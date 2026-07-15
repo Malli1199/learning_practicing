@@ -1,32 +1,38 @@
 pipeline {
     agent any
 
-    tools {
-        // CRITICAL: This MUST match the exact name from your screenshot!
-        sonarRunner 'sonar-scanner'
-    }
-
     stages {
-        stage('Step 1: Fetch Code') {
+        stage('Fetch Project Files') {
             steps {
-                // Pulls your project files into Jenkins workspace
+                cleanWs() // Clean the workspace first
                 checkout scm
             }
         }
 
-        stage('Step 2: Scan Code Quality') {
+        stage('Scan Code Quality') {
             steps {
-                // Connects Jenkins to the SonarQube server configuration
-                withSonarQubeEnv('MY-SONAR-SERVER') {
+                // 1. Grab your existing sonar-token credential from Jenkins
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_PASSWORD')]) {
                     
-                    // Because your scanner is on Windows, we use 'bat' instead of 'sh'
-                    bat '''
-                        sonar-scanner \
-                        -Dsonar.projectKey=my-local-windows-project \
-                        -Dsonar.projectName="My Local Windows Project" \
-                        -Dsonar.sources=. 
-                    '''
-                    
+                    // 2. Connect Jenkins to your SonarQube server configuration
+                    withSonarQubeEnv('MY-SONAR-SERVER') {
+                        
+                        script {
+                            // 3. This dynamically resolves your local "sonar-scanner" tool path!
+                            // The name in quotes MUST match the tool name in your screenshot exactly.
+                            def scannerHome = tool 'sonar-scanner'
+                            
+                            // 4. Run the scanner using the retrieved path on Windows
+                            bat """
+                                "${scannerHome}\\bin\\sonar-scanner" \
+                                -Dsonar.projectKey=my-local-windows-project \
+                                -Dsonar.projectName="My Local Windows Project" \
+                                -Dsonar.sources=. \
+                                -Dsonar.token=${SONAR_PASSWORD}
+                            """
+                        }
+                        
+                    }
                 }
             }
         }
