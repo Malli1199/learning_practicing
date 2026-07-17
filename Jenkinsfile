@@ -15,7 +15,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_PASSWORD')]) {
                     
                     // 2. Connect Jenkins to your SonarQube server configuration
-                    withSonarQubeEnv('My-Sonar-Server') {
+                    withSonarQubeEnv('MY-SONAR-SERVER') {
                         
                         script {
                             // 3. Dynamically resolve your local windows scanner tool path
@@ -25,7 +25,7 @@ pipeline {
                             bat """
                                 "${scannerHome}\\bin\\sonar-scanner" \
                                 -Dsonar.projectKey=my-local-windows-project \
-                                -Dsonar.projectName="My Local Windows Project" \
+                                -Dsonar.projectName="login page" \
                                 -Dsonar.sources=. \
                                 -Dsonar.token=${SONAR_PASSWORD}
                             """
